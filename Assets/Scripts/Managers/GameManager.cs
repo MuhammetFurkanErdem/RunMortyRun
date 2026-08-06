@@ -10,7 +10,6 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton Yapısı
         if (Instance == null)
         {
             Instance = this;
@@ -32,8 +31,21 @@ public class GameManager : MonoBehaviour
 
     public void SetGameOver()
     {
+        if (CurrentState == GameState.GameOver) return;
+
         CurrentState = GameState.GameOver;
         Debug.Log("GAME OVER!");
+
+        // GameManager sahnede silinmediği için 1 saniye sonra restart garantili çalışır
+        Invoke(nameof(AutoRestart), 1.0f);
+    }
+
+    private void AutoRestart()
+    {
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.RestartLevel();
+        }
     }
 
     public void SetLevelCompleted()

@@ -4,7 +4,7 @@ using TMPro;
 
 public class PlayerManager : MonoBehaviour
 {
-    public static PlayerManager Instance { get; private set; } // Tip 'PlayerManager' olarak düzeltildi
+    public static PlayerManager Instance { get; private set; }
 
     [Header("Oyuncu Sayısı")]
     [SerializeField] private int currentCount = 1;
@@ -19,7 +19,6 @@ public class PlayerManager : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton bağlantısı kuruldu
         if (Instance == null)
         {
             Instance = this;
@@ -71,35 +70,48 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    public void RemovePlayer(GameObject hitObject)
+    // amount parametresi eklendi (varsayılan 1)
+    public void RemovePlayer(GameObject hitObject, int amount = 1)
     {
-        // 1. Çarpan obje bir klon ise listeden çıkar ve yok et
-        if (subPlayers.Contains(hitObject))
+        for (int i = 0; i < amount; i++)
         {
-            subPlayers.Remove(hitObject);
-            Destroy(hitObject);
-        }
-        // 2. Çarpan obje ANA Karakter ise ve arkasında klon varsa en arkadaki klonu sil
-        else if (subPlayers.Count > 0)
-        {
-            GameObject lastClone = subPlayers[subPlayers.Count - 1];
-            subPlayers.RemoveAt(subPlayers.Count - 1);
-            Destroy(lastClone);
+            if (subPlayers.Count > 0)
+            {
+                // İlk döngüde eğer temasa geçen obje bir klon ise öncelikle onu sil
+                if (i == 0 && subPlayers.Contains(hitObject))
+                {
+                    subPlayers.Remove(hitObject);
+                    Destroy(hitObject);
+                }
+                else
+                {
+                    // Diğer durumlarda en arkadaki klondan başlayarak sil
+                    GameObject lastClone = subPlayers[subPlayers.Count - 1];
+                    subPlayers.RemoveAt(subPlayers.Count - 1);
+                    Destroy(lastClone);
+                }
+            }
+            else
+            {
+                // Arkada hiç klon kalmadıysa Ana Karakteri yok et
+                if (hitObject != null)
+                {
+                    Destroy(hitObject);
+                }
+                break;
+            }
         }
 
-        // Oyuncu sayısını eksilt
-        currentCount--;
+        // Toplam sayıdan hasar miktarını düş
+        currentCount -= amount;
         currentCount = Mathf.Max(0, currentCount);
         UpdateCountUI();
         FormatSubPlayers();
 
-        // 3. Hiç karakter kalmadıysa Game Over tetikle
+        // Karakterler bittiyse Game Over çağır
         if (currentCount <= 0)
         {
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.SetGameOver();
-            }
+            GameOver();
         }
     }
 
@@ -150,5 +162,10 @@ public class PlayerManager : MonoBehaviour
     private void GameOver()
     {
         Debug.Log("GAME OVER: Tüm karakterler yok oldu!");
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.SetGameOver();
+        }
     }
 }
