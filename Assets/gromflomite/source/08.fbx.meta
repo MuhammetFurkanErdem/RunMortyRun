@@ -87,7 +87,62 @@ ModelImporter:
   humanDescription:
     serializedVersion: 3
     human: []
-    skeleton: []
+    skeleton:
+    - name: 08(Clone)
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: AlasGeo
+      parentName: 08(Clone)
+      position: {x: 0.0010337925, y: 0.14869404, z: -0.046393786}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Arma1
+      parentName: 08(Clone)
+      position: {x: -0.021411031, y: 0.046044104, z: 0.04069104}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Liquido
+      parentName: 08(Clone)
+      position: {x: -0.021845939, y: 0.053416986, z: 0.03794127}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Detalle
+      parentName: 08(Clone)
+      position: {x: -0.0075973426, y: 0.056603286, z: 0.090696864}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: OjosGeo
+      parentName: 08(Clone)
+      position: {x: -0.011550355, y: 0.09650167, z: 0.06426242}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Pelos
+      parentName: 08(Clone)
+      position: {x: -0.019191649, y: 0.061039038, z: 0.0149174975}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1.01, y: 1, z: 1}
+    - name: IntermedioGeo
+      parentName: 08(Clone)
+      position: {x: -0.01218784, y: 0.06521687, z: 0.0069234823}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: GrisGeo
+      parentName: 08(Clone)
+      position: {x: -0.012165293, y: 0.028363824, z: 0.03137366}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: ClaroGeo
+      parentName: 08(Clone)
+      position: {x: -0.011839607, y: 0.055704705, z: 0.013965246}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: GeoOscuro
+      parentName: 08(Clone)
+      position: {x: -0.019097295, y: 0.0607669, z: 0.016500808}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
     armTwist: 0.5
     foreArmTwist: 0.5
     upperLegTwist: 0.5
