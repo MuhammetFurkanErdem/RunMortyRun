@@ -1477,6 +1477,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
   detectionDistance: 18
+  loseDistance: 22
   moveSpeed: 6
 --- !u!1001 &1227850031
 PrefabInstance:
@@ -1492,7 +1493,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2552975570426009600, guid: 3672d0589418fca40bda1c260087ea0f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0000005253687
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2552975570426009600, guid: 3672d0589418fca40bda1c260087ea0f, type: 3}
       propertyPath: m_LocalPosition.z

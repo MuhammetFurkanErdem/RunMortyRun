@@ -1,112 +1,90 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Hareket Ayarları")]
+    [Header("Koşu Hızları")]
     [SerializeField] private float forwardSpeed = 7.5f;
     [SerializeField] private float sideSpeed = 10f;
-    [SerializeField] private float limitX = 5.5f;
+    [SerializeField] private float limitX = 4.5f;
 
-    private float startX;
+    [Header("Yumuşatma ve Dönüş Ayarları")]
+    [SerializeField] private float positionLerpSpeed = 15f; // Sağa-sola kayma yumuşatması
+    [SerializeField] private float rotationSpeed = 10f;    // Çapraza dönme yumuşatması
+    [SerializeField] private float maxTiltAngle = 20f;      // Sağa/sola kayarken kaç derece yatacağı
+
     private Animator animator;
+    private float targetXPosition;
+    private float currentHorizontalInput;
 
     private void Start()
     {
-        startX = transform.position.x;
-
-        // Karakterin Animator bileşenini al ve başlangıçta animasyonu dondur
         animator = GetComponent<Animator>();
-        if (animator != null)
-        {
-            animator.speed = 0f;
-        }
+        targetXPosition = transform.position.x;
     }
 
     private void Update()
     {
-        // Oyun bittiyse hareketi kes ve animasyonu dondur
+        // Game Over durumunda hareketi kes
         if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.GameOver)
         {
             if (animator != null) animator.speed = 0f;
             return;
         }
 
-        // 1. Oyun henüz başlamadıysa tuş girdisi bekle
+        // Oyun başlamadıysa tuş girdisi bekle
         if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.NotStarted)
         {
             CheckForStartInput();
             return;
         }
 
-        // 2. Oyun başladıysa ileri git ve yönlendir
+        // Oyun başladıysa hareket et
         if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing)
         {
-            MoveForward();
             HandleInput();
+            MovePlayer();
+            ApplySmoothRotation();
         }
     }
 
     private void CheckForStartInput()
     {
-        bool hasInput = false;
-
-        // Klavye Kontrolleri
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.aKey.wasPressedThisFrame ||
-                Keyboard.current.dKey.wasPressedThisFrame ||
-                Keyboard.current.leftArrowKey.wasPressedThisFrame ||
-                Keyboard.current.rightArrowKey.wasPressedThisFrame ||
-                Keyboard.current.spaceKey.wasPressedThisFrame)
-            {
-                hasInput = true;
-            }
-        }
-
-        // Fare / Dokunmatik Kontrol
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            hasInput = true;
-        }
-
-        // Girdi alındıysa oyunu başlat ve animasyonu çalıştır
-        if (hasInput)
+        if (Input.anyKeyDown || Input.GetMouseButtonDown(0))
         {
             GameManager.Instance.StartGame();
-
-            if (animator != null)
-            {
-                animator.speed = 1f; // Animasyonu normale döndür
-            }
+            if (animator != null) animator.speed = 1f;
         }
-    }
-
-    private void MoveForward()
-    {
-        transform.Translate(Vector3.forward * forwardSpeed * Time.deltaTime, Space.World);
     }
 
     private void HandleInput()
     {
-        float horizontalInput = 0f;
+        // Klavyeden veya Mobil/Fare girdisinden yön al
+        currentHorizontalInput = Input.GetAxis("Horizontal");
 
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
-            {
-                horizontalInput = -1f;
-            }
-            else if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
-            {
-                horizontalInput = 1f;
-            }
-        }
+        // Hedef X pozisyonunu hesapla ve sınırlar içinde tut
+        targetXPosition += currentHorizontalInput * sideSpeed * Time.deltaTime;
+        targetXPosition = Mathf.Clamp(targetXPosition, -limitX, limitX);
+    }
 
-        Vector3 newPos = transform.position;
-        newPos.x += horizontalInput * sideSpeed * Time.deltaTime;
-        newPos.x = Mathf.Clamp(newPos.x, startX - limitX, startX + limitX);
+    private void MovePlayer()
+    {
+        // 1. İleriye sabit hareket
+        Vector3 newPosition = transform.position + Vector3.forward * forwardSpeed * Time.deltaTime;
 
-        transform.position = newPos;
+        // 2. X pozisyonunu Lerp ile yumuşatarak hedefe çek (Çekiştirilme hissini siler)
+        newPosition.x = Mathf.Lerp(transform.position.x, targetXPosition, Time.deltaTime * positionLerpSpeed);
+
+        transform.position = newPosition;
+    }
+
+    private void ApplySmoothRotation()
+    {
+        // Karakterin anlık horizontal hareketine göre açı hesapla
+        // Sağa gidiyorsa pozitif açı, sola gidiyorsa negatif açı
+        float targetYRotation = currentHorizontalInput * maxTiltAngle;
+
+        // Anlık rotasyonu hedef açıya doğru yumuşakça döndür (Slerp)
+        Quaternion targetRotation = Quaternion.Euler(0f, targetYRotation, 0f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
     }
 }

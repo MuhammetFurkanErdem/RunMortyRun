@@ -3,7 +3,8 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [Header("Düşman Ayarları")]
-    [SerializeField] private float detectionDistance = 18f; // Oyuncu bu mesafeye gelince koşmaya başlar
+    [SerializeField] private float detectionDistance = 18f; // Kovalamayı başlatma mesafesi
+    [SerializeField] private float loseDistance = 22f;      // Oyuncu bu mesafeyi aşarsa kovalamayı bırakır
     [SerializeField] private float moveSpeed = 6f;          // Düşmanın koşma hızı
 
     private Animator animator;
@@ -42,6 +43,11 @@ public class Enemy : MonoBehaviour
         {
             StartRunning();
         }
+        // 2. Kovalamayı Bırakma Kontrolü (Oyuncu atlatıp arayı açtıysa)
+        else if (isRunning && distanceToPlayer > loseDistance)
+        {
+            StopRunning();
+        }
 
         // Koşma durumundaysa oyuncunun olduğu yöne doğru ilerle
         if (isRunning)
@@ -57,6 +63,16 @@ public class Enemy : MonoBehaviour
         if (animator != null)
         {
             animator.SetBool("isRunning", true);
+        }
+    }
+
+    private void StopRunning()
+    {
+        isRunning = false;
+
+        if (animator != null)
+        {
+            animator.SetBool("isRunning", false);
         }
     }
 
