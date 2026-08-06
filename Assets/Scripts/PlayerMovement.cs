@@ -25,6 +25,13 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        // Oyun bittiyse hareketi kes ve animasyonu dondur
+        if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.GameOver)
+        {
+            if (animator != null) animator.speed = 0f;
+            return;
+        }
+
         // 1. Oyun henüz başlamadıysa tuş girdisi bekle
         if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.NotStarted)
         {

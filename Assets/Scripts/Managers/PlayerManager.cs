@@ -4,17 +4,31 @@ using TMPro;
 
 public class PlayerManager : MonoBehaviour
 {
+    public static PlayerManager Instance { get; private set; } // Tip 'PlayerManager' olarak düzeltildi
+
     [Header("Oyuncu Sayısı")]
     [SerializeField] private int currentCount = 1;
     [SerializeField] private TextMeshPro countText;
 
     [Header("Kalabalık (Mob) Ayarları")]
-    [SerializeField] private GameObject playerPrefab; // Project'ten atayacağınız Karakter Prefab'ı
-    [SerializeField] private Transform mobHolder;     // Klonsal karakterlerin toplanacağı Parent obje
-    [SerializeField] private float distanceFactor = 0.25f; // Karakterler arası mesafe çarpanı
+    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private Transform mobHolder;
+    [SerializeField] private float distanceFactor = 0.25f;
 
-    // Sahnede aktif duran klon karakterlerin listesi
     private List<GameObject> subPlayers = new List<GameObject>();
+
+    private void Awake()
+    {
+        // Singleton bağlantısı kuruldu
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void Start()
     {
@@ -57,12 +71,42 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    public void RemovePlayer(GameObject hitObject)
+    {
+        // 1. Çarpan obje bir klon ise listeden çıkar ve yok et
+        if (subPlayers.Contains(hitObject))
+        {
+            subPlayers.Remove(hitObject);
+            Destroy(hitObject);
+        }
+        // 2. Çarpan obje ANA Karakter ise ve arkasında klon varsa en arkadaki klonu sil
+        else if (subPlayers.Count > 0)
+        {
+            GameObject lastClone = subPlayers[subPlayers.Count - 1];
+            subPlayers.RemoveAt(subPlayers.Count - 1);
+            Destroy(lastClone);
+        }
+
+        // Oyuncu sayısını eksilt
+        currentCount--;
+        currentCount = Mathf.Max(0, currentCount);
+        UpdateCountUI();
+        FormatSubPlayers();
+
+        // 3. Hiç karakter kalmadıysa Game Over tetikle
+        if (currentCount <= 0)
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.SetGameOver();
+            }
+        }
+    }
+
     private void UpdateMobVisuals()
     {
-        // Ana karakter zaten sahnede olduğu için kopyalanacak sayı: (currentCount - 1)
         int targetSubPlayerCount = currentCount - 1;
 
-        // 1. EĞER EKSİK KARAKTER VARSA: Yeni Karakterler Üret
         while (subPlayers.Count < targetSubPlayerCount)
         {
             Transform parentTransform = mobHolder != null ? mobHolder : transform;
@@ -70,7 +114,6 @@ public class PlayerManager : MonoBehaviour
             subPlayers.Add(newSubPlayer);
         }
 
-        // 2. EĞER FAZLA KARAKTER VARSA: Karakterleri Sil
         while (subPlayers.Count > targetSubPlayerCount && subPlayers.Count > 0)
         {
             GameObject lastPlayer = subPlayers[subPlayers.Count - 1];
@@ -78,7 +121,6 @@ public class PlayerManager : MonoBehaviour
             Destroy(lastPlayer);
         }
 
-        // 3. KALABALIK FORMASYONUNU YENİDEN HİZALA
         FormatSubPlayers();
     }
 
@@ -86,21 +128,18 @@ public class PlayerManager : MonoBehaviour
     {
         for (int i = 0; i < subPlayers.Count; i++)
         {
-            // Altın Oran / Fermat Spiral Algoritması ile halka şeklinde düzenleme
             float phi = (i + 1) * 137.5f * Mathf.Deg2Rad;
             float r = distanceFactor * Mathf.Sqrt(i + 1);
 
             float x = r * Mathf.Cos(phi);
             float z = r * Mathf.Sin(phi);
 
-            // Yerel pozisyonu ayarla (Ana karakter merkezde kalır)
             Vector3 newLocalPos = new Vector3(x, 0f, z);
             subPlayers[i].transform.localPosition = newLocalPos;
         }
     }
 
     private void UpdateCountUI()
-
     {
         if (countText != null)
         {
