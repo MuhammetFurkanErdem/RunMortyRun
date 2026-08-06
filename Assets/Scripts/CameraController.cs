@@ -3,27 +3,38 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [Header("Hedef ve Takip Ayarları")]
-    [SerializeField] private Transform target;           // Takip edilecek Oyuncu (Morty Smith)
-    [SerializeField] private Vector3 offset = new Vector3(0f, 7.5f, -7f); // Kameranın duracağı açı/mesafe
-    [SerializeField] private float smoothSpeed = 10f;    // Takip yumuşaklığı
-
-    [Header("Kamera X Eksen Ayarı")]
-    [SerializeField] private bool followX = true;        // Kamera sağa-sola oyuncuyla gitsin mi?
+    [SerializeField] private Transform target;
+    [SerializeField] private Vector3 offset = new Vector3(0f, 7.5f, -7f);
+    [SerializeField] private float smoothSpeed = 10f;
+    [SerializeField] private bool followX = true;
 
     private void LateUpdate()
     {
-        if (target == null) return;
-
-        // Kameranın gitmek istediği ideal pozisyon
-        Vector3 targetPosition = target.position + offset;
-
-        // Eğer kameranın sağa-sola oyuncuyla kaymasını istemiyorsan X'i sabitleyebilirsin
-        if (!followX)
+        // Hedef yoksa (veya Morty yeni oluştysa) PlayerManager'dan otomatik bul
+        if (target == null)
         {
-            targetPosition.x = offset.x;
+            if (PlayerManager.Instance != null)
+            {
+                target = PlayerManager.Instance.transform;
+            }
+            else
+            {
+                return; // Karakter henüz doğmadıysa bekle
+            }
         }
 
-        // Yumuşak geçiş (Lerp) ile kamerayı taşı
-        transform.position = Vector3.Lerp(transform.position, targetPosition, smoothSpeed * Time.deltaTime);
+        Vector3 targetPosition;
+
+        if (followX)
+        {
+            targetPosition = target.position + offset;
+        }
+        else
+        {
+            targetPosition = new Vector3(transform.position.x, target.position.y + offset.y, target.position.z + offset.z);
+        }
+
+        // Kamerayı yumuşakça hedefe taşı
+        transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * smoothSpeed);
     }
 }

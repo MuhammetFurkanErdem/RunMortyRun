@@ -20,6 +20,12 @@ public class PlayerMovement : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         targetXPosition = transform.position.x;
+
+        // Başlangıçta bekleme (Standing) animasyonunda kalsın
+        if (animator != null)
+        {
+            animator.SetBool("isRunning", false);
+        }
     }
 
     private void Update()
@@ -49,10 +55,16 @@ public class PlayerMovement : MonoBehaviour
 
     private void CheckForStartInput()
     {
+        // Oyuncu herhangi bir tuşa bastığında veya ekrana tıkladığında
         if (Input.anyKeyDown || Input.GetMouseButtonDown(0))
         {
             GameManager.Instance.StartGame();
-            if (animator != null) animator.speed = 1f;
+
+            if (animator != null)
+            {
+                animator.speed = 1f;
+                animator.SetBool("isRunning", true); // Koşma animasyonunu tetikle
+            }
         }
     }
 
@@ -86,5 +98,18 @@ public class PlayerMovement : MonoBehaviour
         // Anlık rotasyonu hedef açıya doğru yumuşakça döndür (Slerp)
         Quaternion targetRotation = Quaternion.Euler(0f, targetYRotation, 0f);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+    }
+
+    public void ResetPosition(Vector3 startPosition)
+    {
+        transform.position = startPosition;
+        targetXPosition = startPosition.x;
+        transform.rotation = Quaternion.identity;
+
+        // Durma (Standing) animasyonuna geri döndür
+        if (animator != null)
+        {
+            animator.SetBool("isRunning", false);
+        }
     }
 }
