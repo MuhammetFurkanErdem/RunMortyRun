@@ -199,7 +199,7 @@ public class PlayerManager : MonoBehaviour
 
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.SetGameOver();
+            GameManager.Instance.GameOver();
         }
     }
 }

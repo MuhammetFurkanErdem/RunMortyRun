@@ -1,12 +1,12 @@
 using UnityEngine;
-
-public enum GameState { NotStarted, Playing, GameOver, LevelCompleted }
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public GameState CurrentState { get; private set; } = GameState.NotStarted;
+    public enum GameState { Start, Playing, LevelComplete, GameOver }
+    public GameState CurrentState { get; private set; } = GameState.Start;
 
     private void Awake()
     {
@@ -20,37 +20,66 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        CurrentState = GameState.Start;
+        Time.timeScale = 1f;
+    }
+
     public void StartGame()
     {
-        if (CurrentState == GameState.NotStarted)
+        if (CurrentState != GameState.Start) return;
+
+        CurrentState = GameState.Playing;
+
+        if (UIManager.Instance != null)
         {
-            CurrentState = GameState.Playing;
-            Debug.Log("Oyun Başladı!");
+            UIManager.Instance.ShowInGameUI();
         }
     }
 
-    public void SetGameOver()
+    public void LevelCompleted()
+    {
+        if (CurrentState != GameState.Playing) return;
+
+        CurrentState = GameState.LevelComplete;
+        Debug.Log("LEVEL COMPLETED! TEBRİKLER!");
+
+        if (PlayerManager.Instance != null)
+        {
+            PlayerMovement movement = PlayerManager.Instance.GetComponent<PlayerMovement>();
+            if (movement != null) movement.enabled = false;
+        }
+
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.ShowLevelCompleteUI();
+        }
+    }
+
+    public void GameOver()
     {
         if (CurrentState == GameState.GameOver) return;
 
         CurrentState = GameState.GameOver;
-        Debug.Log("GAME OVER!");
+        Debug.Log("GAME OVER: Kaybettiniz!");
 
-        // GameManager sahnede silinmediği için 1 saniye sonra restart garantili çalışır
-        Invoke(nameof(AutoRestart), 1.0f);
-    }
-
-    private void AutoRestart()
-    {
-        if (LevelManager.Instance != null)
+        if (UIManager.Instance != null)
         {
-            LevelManager.Instance.RestartLevel();
+            UIManager.Instance.ShowGameOverUI();
         }
+        else
+        {
+            Debug.LogError("GameManager: Sahnede UIManager.Instance bulunamadı! Hierarchy'de UI Manager var mı?");
+        }
+
+        // Oyun dünyasını dondur (Düşmanların koşmaya devam etmesini engeller)
+        Time.timeScale = 0f;
     }
 
-    public void SetLevelCompleted()
+    public void RestartGame()
     {
-        CurrentState = GameState.LevelCompleted;
-        Debug.Log("LEVEL COMPLETED!");
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
