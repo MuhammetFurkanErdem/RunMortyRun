@@ -45,21 +45,17 @@ public class Gate : MonoBehaviour
         {
             isUsed = true;
 
-            // PlayerManager script'ini bul
-            PlayerManager playerManager = other.GetComponentInParent<PlayerManager>();
-            if (playerManager == null)
+            // Çarpışmayı anında kapat ki arkadan gelen klonlar aynı salisede tetiklemesin
+            Collider col = GetComponent<Collider>();
+            if (col != null) col.enabled = false;
+
+            // Singleton üzerinden doğrudan PlayerManager'a ulaş
+            if (PlayerManager.Instance != null)
             {
-                playerManager = other.GetComponent<PlayerManager>();
+                PlayerManager.Instance.ApplyGateOperation(gateType, gateValue);
             }
 
-            if (playerManager != null)
-            {
-                // İşlemi oyuncuya uygula
-                playerManager.ApplyGateOperation(gateType, gateValue);
-            }
-
-            // Yan yana duran diğer kapının da aynı anda tetiklenmesini engellemek için 
-            // kapıyı veya parent'ını pasife çekebilirsiniz
+            // Kapıyı tamamen gizle
             gameObject.SetActive(false);
         }
     }

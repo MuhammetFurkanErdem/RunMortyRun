@@ -41,15 +41,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.9
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.9
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.9
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
       propertyPath: m_LocalPosition.x
@@ -93,7 +93,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
       propertyPath: m_Name
-      value: Morty Smith (1)
+      value: Morty Smith Clone
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
       propertyPath: m_TagString
@@ -116,12 +116,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 8234052895607222670}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2159307776030329403}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 89313394027155641}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
       insertIndex: -1
@@ -132,41 +126,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: c5bf28115a890c34a8abb6ae66c8bb35, type: 3}
   m_PrefabInstance: {fileID: 6490709647534529605}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8234052895607222670
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6256286964793876756}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5807171e4d0114b4893c8c32de00e6e8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
-  currentCount: 1
-  countText: {fileID: 0}
-  playerPrefab: {fileID: 6256286964793876756}
-  mobHolder: {fileID: 88895039710005348}
-  distanceFactor: 0.25
---- !u!114 &2159307776030329403
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6256286964793876756}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ef14f47799d2e1449a622113931c6582, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  forwardSpeed: 7.5
-  sideSpeed: 10
-  limitX: 4.5
-  positionLerpSpeed: 15
-  rotationSpeed: 10
-  maxTiltAngle: 20
 --- !u!136 &89313394027155641
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -212,7 +171,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0

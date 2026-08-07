@@ -13,7 +13,7 @@ public class PlayerManager : MonoBehaviour
     [Header("Kalabalık (Mob) Ayarları")]
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private Transform mobHolder;
-    [SerializeField] private float distanceFactor = 0.25f;
+    [SerializeField] private float distanceFactor = 0.65f;
 
     private List<GameObject> subPlayers = new List<GameObject>();
 
@@ -70,15 +70,16 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    // amount parametresi eklendi (varsayılan 1)
     public void RemovePlayer(GameObject hitObject, int amount = 1)
     {
+        CleanupSubPlayers();
+
         for (int i = 0; i < amount; i++)
         {
             if (subPlayers.Count > 0)
             {
                 // İlk döngüde eğer temasa geçen obje bir klon ise öncelikle onu sil
-                if (i == 0 && subPlayers.Contains(hitObject))
+                if (i == 0 && hitObject != null && subPlayers.Contains(hitObject))
                 {
                     subPlayers.Remove(hitObject);
                     Destroy(hitObject);
@@ -88,13 +89,13 @@ public class PlayerManager : MonoBehaviour
                     // Diğer durumlarda en arkadaki klondan başlayarak sil
                     GameObject lastClone = subPlayers[subPlayers.Count - 1];
                     subPlayers.RemoveAt(subPlayers.Count - 1);
-                    Destroy(lastClone);
+                    if (lastClone != null) Destroy(lastClone);
                 }
             }
             else
             {
                 // Arkada hiç klon kalmadıysa Ana Karakteri yok et
-                if (hitObject != null)
+                if (hitObject != null && hitObject != gameObject)
                 {
                     Destroy(hitObject);
                 }
@@ -105,6 +106,8 @@ public class PlayerManager : MonoBehaviour
         // Toplam sayıdan hasar miktarını düş
         currentCount -= amount;
         currentCount = Mathf.Max(0, currentCount);
+
+        CleanupSubPlayers();
         UpdateCountUI();
         FormatSubPlayers();
 
@@ -117,20 +120,41 @@ public class PlayerManager : MonoBehaviour
 
     private void UpdateMobVisuals()
     {
-        int targetSubPlayerCount = currentCount - 1;
+        CleanupSubPlayers();
 
+        int targetSubPlayerCount = currentCount - 1;
+        if (targetSubPlayerCount < 0) targetSubPlayerCount = 0;
+
+        // Klon Ekleme
         while (subPlayers.Count < targetSubPlayerCount)
         {
+            if (playerPrefab == null)
+            {
+                Debug.LogError("PlayerManager: playerPrefab Inspector üzerinde atanmamış!");
+                break;
+            }
+
             Transform parentTransform = mobHolder != null ? mobHolder : transform;
             GameObject newSubPlayer = Instantiate(playerPrefab, parentTransform);
-            subPlayers.Add(newSubPlayer);
+
+            // Klonun da Player tag'ine sahip olduğundan emin olalım
+            newSubPlayer.tag = "Player";
+
+            Animator subAnim = newSubPlayer.GetComponent<Animator>();
+            if (subAnim != null)
+            {
+                subAnim.SetBool("isRunning", true);
+            }
+
+            subPlayers.Add(newSubPlayer);   
         }
 
+        // Klon Eksiltme
         while (subPlayers.Count > targetSubPlayerCount && subPlayers.Count > 0)
         {
             GameObject lastPlayer = subPlayers[subPlayers.Count - 1];
             subPlayers.RemoveAt(subPlayers.Count - 1);
-            Destroy(lastPlayer);
+            if (lastPlayer != null) Destroy(lastPlayer);
         }
 
         FormatSubPlayers();
@@ -138,8 +162,12 @@ public class PlayerManager : MonoBehaviour
 
     private void FormatSubPlayers()
     {
+        CleanupSubPlayers();
+
         for (int i = 0; i < subPlayers.Count; i++)
         {
+            if (subPlayers[i] == null) continue;
+
             float phi = (i + 1) * 137.5f * Mathf.Deg2Rad;
             float r = distanceFactor * Mathf.Sqrt(i + 1);
 
@@ -149,6 +177,12 @@ public class PlayerManager : MonoBehaviour
             Vector3 newLocalPos = new Vector3(x, 0f, z);
             subPlayers[i].transform.localPosition = newLocalPos;
         }
+    }
+
+    private void CleanupSubPlayers()
+    {
+        // Yok edilmiş (null) klonları listeden tamamen siler
+        subPlayers.RemoveAll(player => player == null);
     }
 
     private void UpdateCountUI()
