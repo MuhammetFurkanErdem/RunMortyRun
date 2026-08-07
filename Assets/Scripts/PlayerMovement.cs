@@ -7,6 +7,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float sideSpeed = 10f;
     [SerializeField] private float limitX = 4.5f;
 
+    [Header("Kontrolcü Referansı")]
+    [SerializeField] private Joystick joystick; // Canvas üzerindeki Joystick
+
     [Header("Yumuşatma ve Dönüş Ayarları")]
     [SerializeField] private float positionLerpSpeed = 15f;
     [SerializeField] private float rotationSpeed = 10f;
@@ -21,7 +24,6 @@ public class PlayerMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         targetXPosition = transform.position.x;
 
-        // Başlangıçta bekleme (Standing) animasyonunda kalsın
         if (animator != null)
         {
             animator.SetBool("isRunning", false);
@@ -32,24 +34,20 @@ public class PlayerMovement : MonoBehaviour
     {
         if (GameManager.Instance == null) return;
 
-        // 1. Game Over durumunda hareketi kes
         if (GameManager.Instance.CurrentState == GameManager.GameState.GameOver)
         {
             if (animator != null) animator.speed = 0f;
             return;
         }
 
-        // 2. Oyun henüz başlamadıysa girdi bekle (GameState.Start kontrolü)
         if (GameManager.Instance.CurrentState == GameManager.GameState.Start)
         {
             CheckForStartInput();
             return;
         }
 
-        // 3. Oyun başladıysa hareket et (GameState.Playing)
         if (GameManager.Instance.CurrentState == GameManager.GameState.Playing)
         {
-            // Oyun başladığında koşma animasyonunu tetikle
             if (animator != null && !animator.GetBool("isRunning"))
             {
                 animator.speed = 1f;
@@ -64,7 +62,6 @@ public class PlayerMovement : MonoBehaviour
 
     private void CheckForStartInput()
     {
-        // Oyuncu ekrana tıkladığında veya bir tuşa bastığında oyunu başlat
         if (Input.anyKeyDown || Input.GetMouseButtonDown(0))
         {
             GameManager.Instance.StartGame();
@@ -73,8 +70,20 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleInput()
     {
-        currentHorizontalInput = Input.GetAxis("Horizontal");
+        currentHorizontalInput = 0f;
 
+        // 1. Önce Joystick Kontrolü (Mobil ve Fare)
+        if (joystick != null && Mathf.Abs(joystick.Horizontal) > 0.05f)
+        {
+            currentHorizontalInput = joystick.Horizontal;
+        }
+        // 2. Eğer Joystick kullanılmıyorsa Klavyeyi Oku (A/D - Yön Tuşları)
+        else
+        {
+            currentHorizontalInput = Input.GetAxis("Horizontal");
+        }
+
+        // Hedef X pozisyonunu güncelle ve limitX sınırına tam oturt
         targetXPosition += currentHorizontalInput * sideSpeed * Time.deltaTime;
         targetXPosition = Mathf.Clamp(targetXPosition, -limitX, limitX);
     }

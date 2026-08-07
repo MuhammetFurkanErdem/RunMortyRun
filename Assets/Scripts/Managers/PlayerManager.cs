@@ -14,6 +14,7 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private Transform mobHolder;
     [SerializeField] private float distanceFactor = 0.65f;
+    [SerializeField] private float minRadius = 0.85f;
 
     private List<GameObject> subPlayers = new List<GameObject>();
 
@@ -169,7 +170,8 @@ public class PlayerManager : MonoBehaviour
             if (subPlayers[i] == null) continue;
 
             float phi = (i + 1) * 137.5f * Mathf.Deg2Rad;
-            float r = distanceFactor * Mathf.Sqrt(i + 1);
+
+            float r = minRadius + (distanceFactor * Mathf.Sqrt(i));
 
             float x = r * Mathf.Cos(phi);
             float z = r * Mathf.Sin(phi);
