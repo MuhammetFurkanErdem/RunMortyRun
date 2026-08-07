@@ -106,5 +106,12 @@ public class Enemy : MonoBehaviour
             // Düşman kendini yok eder (1-e-1 çarpışma mantığı)
             Destroy(gameObject);
         }
+
+        if (other.CompareTag("Player"))
+        {
+            // Ses ve Kamera Shake
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayCharacterDeath();
+            if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.15f, 0.25f);
+        }
     }
 }

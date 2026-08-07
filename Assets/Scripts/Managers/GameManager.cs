@@ -55,6 +55,8 @@ public class GameManager : MonoBehaviour
         {
             UIManager.Instance.ShowLevelCompleteUI();
         }
+
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayLevelWin();
     }
 
     public void GameOver()
@@ -75,6 +77,8 @@ public class GameManager : MonoBehaviour
 
         // Oyun dünyasını dondur (Düşmanların koşmaya devam etmesini engeller)
         Time.timeScale = 0f;
+
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayGameOver();
     }
 
     public void RestartGame()

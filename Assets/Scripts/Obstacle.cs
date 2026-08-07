@@ -19,5 +19,17 @@ public class Obstacle : MonoBehaviour
                 Destroy(other.gameObject);
             }
         }
+
+        if (other.CompareTag("Player"))
+        {
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.RemovePlayer(other.gameObject, damageAmount);
+            }
+
+            // Ses ve Kamera Shake
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayCharacterDeath();
+            if (CameraShake.Instance != null) CameraShake.Instance.Shake(0.15f, 0.25f);
+        }
     }
 }

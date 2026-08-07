@@ -45,7 +45,6 @@ public class Gate : MonoBehaviour
         {
             isUsed = true;
 
-            // Çarpışmayı anında kapat ki arkadan gelen klonlar aynı salisede tetiklemesin
             Collider col = GetComponent<Collider>();
             if (col != null) col.enabled = false;
 
@@ -57,6 +56,20 @@ public class Gate : MonoBehaviour
 
             // Kapıyı tamamen gizle
             gameObject.SetActive(false);
+        }
+
+        if (PlayerManager.Instance != null)
+        {
+            PlayerManager.Instance.ApplyGateOperation(gateType, gateValue);
+
+            // Ses Efekti Tetikleme
+            if (AudioManager.Instance != null)
+            {
+                if (gateType == GateType.Add || gateType == GateType.Multiply)
+                    AudioManager.Instance.PlayPositiveGate();
+                else
+                    AudioManager.Instance.PlayNegativeGate();
+            }
         }
     }
 }
