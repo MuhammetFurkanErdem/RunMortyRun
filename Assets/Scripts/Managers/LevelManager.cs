@@ -5,6 +5,21 @@ public class LevelManager : MonoBehaviour
 {
     public static LevelManager Instance { get; private set; }
 
+    [System.Serializable]
+    public class SegmentConfig
+    {
+        public string segmentName; // Inspector'da kolay tanım için (Örn: Kapılar, Düşmanlar)
+        public GameObject prefab;
+
+        [Range(0f, 1f)]
+        [Tooltip("Bu parçanın bölümde bulunma minimum oranı (Örn: 0.1 = %10)")]
+        public float minRatio = 0.1f;
+
+        [Range(0f, 1f)]
+        [Tooltip("Bu parçanın bölümde bulunma maksimum oranı (Örn: 0.3 = %30)")]
+        public float maxRatio = 0.3f;
+    }
+
     [Header("Oyuncu Yapılandırması")]
     [SerializeField] private GameObject playerPrefab; // Morty Smith Prefabı
 
@@ -12,11 +27,11 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private GameObject startSegmentPrefab;  // Chunk_Start
     [SerializeField] private GameObject finishSegmentPrefab; // Chunk_Finish
 
-    [Header("Rastgele Seçilecek Orta Parçalar")]
-    [SerializeField] private List<GameObject> middleSegmentPrefabs = new List<GameObject>(); // Gate, Trap, Enemy parçaları
+    [Header("Orta Parçalar ve Oransal Sınırları")]
+    [SerializeField] private List<SegmentConfig> middleSegmentConfigs = new List<SegmentConfig>();
 
     [Header("Bölüm Ayarları")]
-    [SerializeField] private int middleSegmentCount = 5; // Bölümde kaç tane rastgele engel parçası olacağı
+    [SerializeField] private int middleSegmentCount = 10; // Bölümde kaç tane rastgele engel parçası olacağı
     [SerializeField] private Transform levelHolder;
 
     private List<GameObject> spawnedSegments = new List<GameObject>();
@@ -47,25 +62,97 @@ public class LevelManager : MonoBehaviour
         // 2. PLAYER (MORTY) OLUŞTUR/IŞINLA
         SpawnOrResetPlayer();
 
-        // 3. ORTA PARÇALARI RASTGELE DİZ (Chunk_Gates, Chunk_Traps, Chunk_Enemies)
-        if (middleSegmentPrefabs.Count > 0)
+        // 3. ORTA PARÇALARI LİMİTLERE VE ORANLARA GÖRE DİZ
+        List<GameObject> selectedSegments = GenerateBalancedSegmentList();
+        foreach (GameObject segmentPrefab in selectedSegments)
         {
-            for (int i = 0; i < middleSegmentCount; i++)
+            if (segmentPrefab != null)
             {
-                int randomIndex = Random.Range(0, middleSegmentPrefabs.Count);
-                GameObject randomPrefab = middleSegmentPrefabs[randomIndex];
+                spawnPosition = SpawnSegment(segmentPrefab, spawnPosition);
+            }
+        }
 
-                if (randomPrefab != null)
+        // 4. BİTİŞ PARÇASINI OLUŞTUR (Chunk_Finish)
+        if (finishSegmentPrefab != null)
+        {
+            SpawnSegment(finishSegmentPrefab, spawnPosition);
+        }
+    }
+
+    private List<GameObject> GenerateBalancedSegmentList()
+    {
+        List<GameObject> resultList = new List<GameObject>();
+
+        if (middleSegmentConfigs == null || middleSegmentConfigs.Count == 0)
+            return resultList;
+
+        Dictionary<SegmentConfig, int> currentCounts = new Dictionary<SegmentConfig, int>();
+        Dictionary<SegmentConfig, int> minCounts = new Dictionary<SegmentConfig, int>();
+        Dictionary<SegmentConfig, int> maxCounts = new Dictionary<SegmentConfig, int>();
+
+        // Her parça için Min ve Max sayı limitlerini hesapla
+        foreach (var config in middleSegmentConfigs)
+        {
+            currentCounts[config] = 0;
+            minCounts[config] = Mathf.FloorToInt(middleSegmentCount * config.minRatio);
+            maxCounts[config] = Mathf.CeilToInt(middleSegmentCount * config.maxRatio);
+        }
+
+        // A ADIMI: Önce Her Parçanın Garanti Edilen Minimum Sayısını Ekle
+        foreach (var config in middleSegmentConfigs)
+        {
+            int minNeeded = minCounts[config];
+            for (int i = 0; i < minNeeded && resultList.Count < middleSegmentCount; i++)
+            {
+                if (config.prefab != null)
                 {
-                    spawnPosition = SpawnSegment(randomPrefab, spawnPosition);
+                    resultList.Add(config.prefab);
+                    currentCounts[config]++;
                 }
             }
         }
 
-        // 4. BİTİŞ PARÇASINI OLUŞTUR
-        if (finishSegmentPrefab != null)
+        // B ADIMI: Kalan Boşlukları Maksimum Sınırını Aşmayan Parçalar Arasından Doldur
+        while (resultList.Count < middleSegmentCount)
         {
-            SpawnSegment(finishSegmentPrefab, spawnPosition);
+            List<SegmentConfig> availableConfigs = new List<SegmentConfig>();
+
+            foreach (var config in middleSegmentConfigs)
+            {
+                if (config.prefab != null && currentCounts[config] < maxCounts[config])
+                {
+                    availableConfigs.Add(config);
+                }
+            }
+
+            // Sınırların sıkışması durumunda güvenlik kilitlenmesini önlemek için tüm prefablara izin ver
+            if (availableConfigs.Count == 0)
+            {
+                foreach (var config in middleSegmentConfigs)
+                {
+                    if (config.prefab != null) availableConfigs.Add(config);
+                }
+            }
+
+            SegmentConfig chosenConfig = availableConfigs[Random.Range(0, availableConfigs.Count)];
+            resultList.Add(chosenConfig.prefab);
+            currentCounts[chosenConfig]++;
+        }
+
+        // C ADIMI: Sıralamayı Karıştır (Aynı tip parçalar art arda gelmesin)
+        ShuffleList(resultList);
+
+        return resultList;
+    }
+
+    private void ShuffleList(List<GameObject> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int randomIndex = Random.Range(0, i + 1);
+            GameObject temp = list[i];
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
         }
     }
 
@@ -73,18 +160,15 @@ public class LevelManager : MonoBehaviour
     {
         GameObject playerObj = null;
 
-        // Sahnede zaten Morty varsa onu al
         if (PlayerManager.Instance != null)
         {
             playerObj = PlayerManager.Instance.gameObject;
         }
-        // Sahnede Morty yoksa Prefab'dan sıfırdan oluştur
         else if (playerPrefab != null)
         {
             playerObj = Instantiate(playerPrefab);
         }
 
-        // Morty'yi başlangıç çizgisine ($Z = 5$) yerleştir
         if (playerObj != null)
         {
             PlayerMovement playerMovement = playerObj.GetComponent<PlayerMovement>();
@@ -102,11 +186,9 @@ public class LevelManager : MonoBehaviour
         GameObject spawned = Instantiate(prefab, position, Quaternion.identity, parentTransform);
         spawnedSegments.Add(spawned);
 
-        // Segment uzunluğunu al (varsayılan 50)
         LevelSegment segmentScript = spawned.GetComponent<LevelSegment>();
         float length = (segmentScript != null) ? segmentScript.segmentLength : 50f;
 
-        // Bir sonraki parçanın Z pozisyonunu hesapla
         position.z += length;
         return position;
     }
