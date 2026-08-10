@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float limitX = 4.5f;
 
     [Header("Kontrolcü Referansı")]
-    [SerializeField] private Joystick joystick; // Canvas üzerindeki Joystick
+    [SerializeField] private Joystick joystick;
 
     [Header("Yumuşatma ve Dönüş Ayarları")]
     [SerializeField] private float positionLerpSpeed = 15f;
@@ -34,18 +34,31 @@ public class PlayerMovement : MonoBehaviour
     {
         if (GameManager.Instance == null) return;
 
+        // 1. Game Over Durumu
         if (GameManager.Instance.CurrentState == GameManager.GameState.GameOver)
         {
             if (animator != null) animator.speed = 0f;
             return;
         }
 
+        // 2. Level Complete (Bitiş Çizgisi) Durumu - MORTY BURADA DURUYOR
+        if (GameManager.Instance.CurrentState == GameManager.GameState.LevelComplete)
+        {
+            if (animator != null)
+            {
+                animator.SetBool("isRunning", false);
+            }
+            return; // İleri ve yan hareketi tamamen kes
+        }
+
+        // 3. Oyun Başlamadıysa (Start Ekranı)
         if (GameManager.Instance.CurrentState == GameManager.GameState.Start)
         {
             CheckForStartInput();
             return;
         }
 
+        // 4. Oyun Oynanıyorsa
         if (GameManager.Instance.CurrentState == GameManager.GameState.Playing)
         {
             if (animator != null && !animator.GetBool("isRunning"))
@@ -72,18 +85,15 @@ public class PlayerMovement : MonoBehaviour
     {
         currentHorizontalInput = 0f;
 
-        // 1. Önce Joystick Kontrolü (Mobil ve Fare)
         if (joystick != null && Mathf.Abs(joystick.Horizontal) > 0.05f)
         {
             currentHorizontalInput = joystick.Horizontal;
         }
-        // 2. Eğer Joystick kullanılmıyorsa Klavyeyi Oku (A/D - Yön Tuşları)
         else
         {
             currentHorizontalInput = Input.GetAxis("Horizontal");
         }
 
-        // Hedef X pozisyonunu güncelle ve limitX sınırına tam oturt
         targetXPosition += currentHorizontalInput * sideSpeed * Time.deltaTime;
         targetXPosition = Mathf.Clamp(targetXPosition, -limitX, limitX);
     }

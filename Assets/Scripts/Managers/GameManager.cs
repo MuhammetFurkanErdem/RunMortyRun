@@ -66,19 +66,18 @@ public class GameManager : MonoBehaviour
         CurrentState = GameState.GameOver;
         Debug.Log("GAME OVER: Kaybettiniz!");
 
+        // Kamera sarsıntısını anında durdur ve merkeze çek
+        if (CameraShake.Instance != null)
+        {
+            CameraShake.Instance.StopShake();
+        }
+
         if (UIManager.Instance != null)
         {
             UIManager.Instance.ShowGameOverUI();
         }
-        else
-        {
-            Debug.LogError("GameManager: Sahnede UIManager.Instance bulunamadı! Hierarchy'de UI Manager var mı?");
-        }
 
-        // Oyun dünyasını dondur (Düşmanların koşmaya devam etmesini engeller)
         Time.timeScale = 0f;
-
-        if (AudioManager.Instance != null) AudioManager.Instance.PlayGameOver();
     }
 
     public void RestartGame()

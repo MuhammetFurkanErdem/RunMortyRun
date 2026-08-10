@@ -1,12 +1,12 @@
-using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
+using UnityEngine;
 
 public class CameraShake : MonoBehaviour
 {
     public static CameraShake Instance { get; private set; }
 
-    private Vector3 originalPos;
+    private Coroutine shakeCoroutine;
+    private Vector3 lastShakeOffset = Vector3.zero;
 
     private void Awake()
     {
@@ -16,25 +16,53 @@ public class CameraShake : MonoBehaviour
 
     public void Shake(float duration = 0.15f, float magnitude = 0.2f)
     {
-        StartCoroutine(ShakeRoutine(duration, magnitude));
+        if (shakeCoroutine != null)
+        {
+            StopCoroutine(shakeCoroutine);
+            // Önceki sarsıntıdan kalan sapmayı temizle
+            transform.localPosition -= lastShakeOffset;
+            lastShakeOffset = Vector3.zero;
+        }
+
+        shakeCoroutine = StartCoroutine(ShakeRoutine(duration, magnitude));
     }
 
-    private System.Collections.IEnumerator ShakeRoutine(float duration, float magnitude)
+    public void StopShake()
     {
-        originalPos = transform.localPosition;
+        if (shakeCoroutine != null)
+        {
+            StopCoroutine(shakeCoroutine);
+            shakeCoroutine = null;
+        }
+
+        // Sarsıntıyı anında kes ve eklenen ekstra sapmayı geri al
+        transform.localPosition -= lastShakeOffset;
+        lastShakeOffset = Vector3.zero;
+    }
+
+    private IEnumerator ShakeRoutine(float duration, float magnitude)
+    {
         float elapsed = 0.0f;
 
         while (elapsed < duration)
         {
+            // Bir önceki karede eklediğimiz sarsıntı farkını çıkar
+            transform.localPosition -= lastShakeOffset;
+
+            // Yeni küçük sarsıntı offseti hesapla
             float x = Random.Range(-1f, 1f) * magnitude;
             float y = Random.Range(-1f, 1f) * magnitude;
+            lastShakeOffset = new Vector3(x, y, 0f);
 
-            transform.localPosition = new Vector3(originalPos.x + x, originalPos.y + y, originalPos.z);
+            // Kameranın anlık pozisyonuna uygula
+            transform.localPosition += lastShakeOffset;
 
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             yield return null;
         }
 
-        transform.localPosition = originalPos;
+        // Sarsıntı bitince kamerayı tam olması gereken yere sıfırla
+        transform.localPosition -= lastShakeOffset;
+        lastShakeOffset = Vector3.zero;
     }
 }

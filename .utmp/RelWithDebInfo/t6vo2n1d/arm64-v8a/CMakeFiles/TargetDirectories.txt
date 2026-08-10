@@ -1,0 +1,5 @@
+C:/projelerim/UnityProjeleri/Assets_Test/.utmp/RelWithDebInfo/t6vo2n1d/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/projelerim/UnityProjeleri/Assets_Test/.utmp/RelWithDebInfo/t6vo2n1d/arm64-v8a/CMakeFiles/rebuild_cache.dir
+C:/projelerim/UnityProjeleri/Assets_Test/.utmp/RelWithDebInfo/t6vo2n1d/arm64-v8a/GameActivity/CMakeFiles/game.dir
+C:/projelerim/UnityProjeleri/Assets_Test/.utmp/RelWithDebInfo/t6vo2n1d/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+C:/projelerim/UnityProjeleri/Assets_Test/.utmp/RelWithDebInfo/t6vo2n1d/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
