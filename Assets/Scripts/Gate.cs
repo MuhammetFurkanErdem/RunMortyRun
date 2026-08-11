@@ -40,29 +40,22 @@ public class Gate : MonoBehaviour
         // Kapı zaten kullanıldıysa işlem yapma
         if (isUsed) return;
 
-        // Çarpan obje Oyuncu ise (veya Oyuncu grubuna aitse)
+        // Çarpan obje Oyuncu ise
         if (other.CompareTag("Player"))
         {
             isUsed = true;
 
+            // 1. Collider'ı kapat ki aynı anda birden fazla klon girmesin
             Collider col = GetComponent<Collider>();
             if (col != null) col.enabled = false;
 
-            // Singleton üzerinden doğrudan PlayerManager'a ulaş
+            // 2. Oyuncu sayısını SADECE BİR KEZ güncelle
             if (PlayerManager.Instance != null)
             {
                 PlayerManager.Instance.ApplyGateOperation(gateType, gateValue);
             }
 
-            // Kapıyı tamamen gizle
-            gameObject.SetActive(false);
-        }
-
-        if (PlayerManager.Instance != null)
-        {
-            PlayerManager.Instance.ApplyGateOperation(gateType, gateValue);
-
-            // Ses Efekti Tetikleme
+            // 3. Ses Efektini Tetikle
             if (AudioManager.Instance != null)
             {
                 if (gateType == GateType.Add || gateType == GateType.Multiply)
@@ -70,6 +63,9 @@ public class Gate : MonoBehaviour
                 else
                     AudioManager.Instance.PlayNegativeGate();
             }
+
+            // 4. Kapıyı gizle
+            gameObject.SetActive(false);
         }
     }
 }

@@ -32,6 +32,13 @@ public class FinishLine : MonoBehaviour
         {
             isTriggered = true;
 
+            // 1. Sinematik Kamera Açısına Geç
+            if (CameraController.Instance != null)
+            {
+                CameraController.Instance.SwitchToFinishView();
+            }
+
+            // 2. Merdiven tırmanışını başlat
             if (PlayerManager.Instance != null)
             {
                 initialCrowdCount = PlayerManager.Instance.GetCrowdCount();

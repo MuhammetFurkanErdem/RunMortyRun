@@ -166,6 +166,13 @@ public class PlayerMovement : MonoBehaviour
         currentHorizontalInput = 0f;
         isBonusRunning = true;
 
+        // 1. Joystick Görselini ve Input'unu Ekrandan Gizle
+        if (joystick != null)
+        {
+            joystick.gameObject.SetActive(false);
+        }
+
+        // 2. Fiziki Çakışmaları Kapat
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) rb.isKinematic = true;
 
@@ -191,6 +198,12 @@ public class PlayerMovement : MonoBehaviour
         transform.rotation = Quaternion.identity;
         canMoveHorizontally = true;
         isBonusRunning = false;
+
+        // Joystick'i yeni bölüm için tekrar görünür yap
+        if (joystick != null)
+        {
+            joystick.gameObject.SetActive(true);
+        }
 
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb != null) rb.isKinematic = false;

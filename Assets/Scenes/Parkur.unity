@@ -1059,6 +1059,9 @@ MonoBehaviour:
   offset: {x: 0, y: 16, z: -18}
   smoothSpeed: 10
   followX: 1
+  finishOffset: {x: -30, y: 25, z: 2}
+  finishRotation: {x: 25, y: 90, z: 0}
+  finishTransitionSpeed: 2.5
 --- !u!114 &330585549
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2438,7 +2441,7 @@ MonoBehaviour:
     prefab: {fileID: 4525360284394676269, guid: 0721953bb0f0b0c4eaf31cad0f7aeafa, type: 3}
     minRatio: 0.1
     maxRatio: 0.3
-  middleSegmentCount: 1
+  middleSegmentCount: 10
   levelHolder: {fileID: 0}
 --- !u!4 &786086386
 Transform:
@@ -3049,6 +3052,10 @@ PrefabInstance:
       objectReference: {fileID: 1687791511}
     - target: {fileID: 2159307776030329403, guid: cf49b2b069fae3347bd53c57a26927d2, type: 3}
       propertyPath: yLerpSpeed
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2159307776030329403, guid: cf49b2b069fae3347bd53c57a26927d2, type: 3}
+      propertyPath: forwardSpeed
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 2159307776030329403, guid: cf49b2b069fae3347bd53c57a26927d2, type: 3}
