@@ -125,7 +125,6 @@ public class LevelManager : MonoBehaviour
                 }
             }
 
-            // Sınırların sıkışması durumunda güvenlik kilitlenmesini önlemek için tüm prefablara izin ver
             if (availableConfigs.Count == 0)
             {
                 foreach (var config in middleSegmentConfigs)
@@ -139,14 +138,16 @@ public class LevelManager : MonoBehaviour
             currentCounts[chosenConfig]++;
         }
 
-        // C ADIMI: Sıralamayı Karıştır (Aynı tip parçalar art arda gelmesin)
-        ShuffleList(resultList);
+        // C ADIMI: AKILLI KARIŞTIRMA (Aynı kategorideki parçaların art arda gelmesini engelle)
+        SmartShuffleList(resultList);
 
         return resultList;
     }
 
-    private void ShuffleList(List<GameObject> list)
+    // --- AKILLI KARIŞTIRMA VE ARDIŞIK TEKRAR ENGELLEME ---
+    private void SmartShuffleList(List<GameObject> list)
     {
+        // 1. Önce Klasik Fisher-Yates Karıştırma
         for (int i = list.Count - 1; i > 0; i--)
         {
             int randomIndex = Random.Range(0, i + 1);
@@ -154,6 +155,63 @@ public class LevelManager : MonoBehaviour
             list[i] = list[randomIndex];
             list[randomIndex] = temp;
         }
+
+        // 2. Ardışık Aynı Kategorileri Ayrıştır (Takas Et)
+        for (int i = 1; i < list.Count; i++)
+        {
+            if (IsSameCategory(list[i], list[i - 1]))
+            {
+                // İleride farklı bir kategoriye ait parça bul ve takas et
+                bool swapped = false;
+                for (int j = i + 1; j < list.Count; j++)
+                {
+                    if (!IsSameCategory(list[j], list[i - 1]))
+                    {
+                        GameObject temp = list[i];
+                        list[i] = list[j];
+                        list[j] = temp;
+                        swapped = true;
+                        break;
+                    }
+                }
+
+                // İleride takas edilecek eleman bulunamadıysa geriye doğru dene
+                if (!swapped)
+                {
+                    for (int j = 0; j < i - 1; j++)
+                    {
+                        if (!IsSameCategory(list[i], list[j]) && (j == 0 || !IsSameCategory(list[i], list[j - 1])))
+                        {
+                            GameObject temp = list[i];
+                            list[i] = list[j];
+                            list[j] = temp;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private bool IsSameCategory(GameObject a, GameObject b)
+    {
+        if (a == null || b == null) return false;
+
+        string catA = GetCategoryName(a.name);
+        string catB = GetCategoryName(b.name);
+
+        return catA == catB;
+    }
+
+    private string GetCategoryName(string objName)
+    {
+        string lower = objName.ToLower();
+
+        if (lower.Contains("gate")) return "Gate";
+        if (lower.Contains("trap") || lower.Contains("obstacle")) return "Trap";
+        if (lower.Contains("enemy") || lower.Contains("enemies")) return "Enemy";
+
+        return objName;
     }
 
     private void SpawnOrResetPlayer()

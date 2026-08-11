@@ -133,7 +133,13 @@ public class PlayerMovement : MonoBehaviour
 
         foreach (var hit in hits)
         {
-            if (hit.collider.CompareTag("FinishLine") || hit.collider.CompareTag("Player") || hit.collider.GetComponent<FinishLine>() != null)
+            // Engelleri, Düşmanları, Kapıları ve Oyuncuları zemin olarak algılama!
+            if (hit.collider.CompareTag("FinishLine") ||
+                hit.collider.CompareTag("Player") ||
+                hit.collider.CompareTag("Obstacle") ||
+                hit.collider.CompareTag("Enemy") ||
+                hit.collider.CompareTag("Gate") ||
+                hit.collider.GetComponent<FinishLine>() != null)
                 continue;
 
             if (hit.point.y > maxHitY)

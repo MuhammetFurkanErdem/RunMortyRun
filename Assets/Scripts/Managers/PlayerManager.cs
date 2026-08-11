@@ -10,11 +10,14 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private int currentCount = 1;
     [SerializeField] private TextMeshPro countText;
 
+    [Header("Harita Sınır Ayarları")]
+    [SerializeField] private float maxTrackX = 3.8f; // Yolun genişlik sınırı (Sol: -3.8, Sağ: +3.8)
+
     [Header("Kalabalık (Mob) Ayarları")]
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private Transform mobHolder;
-    [SerializeField] private float distanceFactor = 0.65f;
-    [SerializeField] private float minRadius = 0.85f;
+    [SerializeField] private float distanceFactor = 0.45f; // Daha sıkı dizilim
+    [SerializeField] private float minRadius = 0.5f;       // Daha toplu merkez
 
     private List<GameObject> subPlayers = new List<GameObject>();
 
@@ -54,19 +57,16 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    // Seviye bittiğinde tüm kopyaların koşu animasyonunu durdurur
     public void StopAllAnimations()
     {
         CleanupSubPlayers();
 
-        // Ana Karakter
         Animator mainAnim = GetComponent<Animator>();
         if (mainAnim != null)
         {
             mainAnim.SetBool("isRunning", false);
         }
 
-        // Tüm Klonlar
         foreach (var clone in subPlayers)
         {
             if (clone == null) continue;
@@ -88,14 +88,32 @@ public class PlayerManager : MonoBehaviour
         {
             if (subPlayers[i] == null) continue;
 
+            // 1. Standart Spiral Konum Hesabı
             float phi = (i + 1) * 137.5f * Mathf.Deg2Rad;
             float r = minRadius + (distanceFactor * Mathf.Sqrt(i));
 
             float localX = r * Mathf.Cos(phi);
             float localZ = r * Mathf.Sin(phi);
 
-            Vector3 cloneWorldPos = parentTransform.TransformPoint(new Vector3(localX, 0f, localZ));
+            // 2. Dünya X Pozisyonunu Ve Sınır Taşmasını Hesapla
+            float worldX = parentTransform.position.x + localX;
 
+            // --- HARİTADAN TAŞMAYI ENGELLEME VE ARKAYA YÖNLENDİRME ---
+            if (worldX > maxTrackX)
+            {
+                float overflow = worldX - maxTrackX;
+                localX -= overflow;           // Sağ duvara sabitle
+                localZ -= overflow * 1.2f;    // Dışarı taşan kısmı arkaya doğru uzat!
+            }
+            else if (worldX < -maxTrackX)
+            {
+                float overflow = -maxTrackX - worldX;
+                localX += overflow;           // Sol duvara sabitle
+                localZ -= overflow * 1.2f;    // Dışarı taşan kısmı arkaya doğru uzat!
+            }
+
+            // 3. Bastığı Zemini Raycast İle Bul
+            Vector3 cloneWorldPos = parentTransform.TransformPoint(new Vector3(localX, 0f, localZ));
             Vector3 rayOrigin = cloneWorldPos + Vector3.forward * 0.8f + Vector3.up * 5f;
             RaycastHit[] hits = Physics.RaycastAll(rayOrigin, Vector3.down, 15f, ~0, QueryTriggerInteraction.Collide);
 
@@ -105,7 +123,13 @@ public class PlayerManager : MonoBehaviour
 
             foreach (var hit in hits)
             {
-                if (hit.collider.CompareTag("FinishLine") || hit.collider.CompareTag("Player") || hit.collider.GetComponent<FinishLine>() != null)
+                // Kopyalar için de engelleri ve düşmanları yok say
+                if (hit.collider.CompareTag("FinishLine") ||
+                    hit.collider.CompareTag("Player") ||
+                    hit.collider.CompareTag("Obstacle") ||
+                    hit.collider.CompareTag("Enemy") ||
+                    hit.collider.CompareTag("Gate") ||
+                    hit.collider.GetComponent<FinishLine>() != null)
                     continue;
 
                 if (hit.point.y > maxHitY)
@@ -220,7 +244,6 @@ public class PlayerManager : MonoBehaviour
             Animator subAnim = newSubPlayer.GetComponent<Animator>();
             if (subAnim != null)
             {
-                // Eğer oyun devam ediyorsa koşma animasyonu açılır
                 bool isPlaying = GameManager.Instance == null || GameManager.Instance.CurrentState == GameManager.GameState.Playing;
                 subAnim.SetBool("isRunning", isPlaying);
             }
