@@ -6,6 +6,9 @@ public class PlayerManager : MonoBehaviour
 {
     public static PlayerManager Instance { get; private set; }
 
+    [Header("Ölüm Efekti")]
+    [SerializeField] private GameObject deathParticlePrefab;
+
     [Header("Oyuncu Sayısı")]
     [SerializeField] private int currentCount = 1;
     [SerializeField] private TextMeshPro countText;
@@ -189,27 +192,34 @@ public class PlayerManager : MonoBehaviour
 
         for (int i = 0; i < amount; i++)
         {
+            GameObject victim = null;
+
             if (subPlayers.Count > 0)
             {
                 if (i == 0 && hitObject != null && subPlayers.Contains(hitObject))
                 {
+                    victim = hitObject;
                     subPlayers.Remove(hitObject);
-                    Destroy(hitObject);
                 }
                 else
                 {
-                    GameObject lastClone = subPlayers[subPlayers.Count - 1];
+                    victim = subPlayers[subPlayers.Count - 1];
                     subPlayers.RemoveAt(subPlayers.Count - 1);
-                    if (lastClone != null) Destroy(lastClone);
                 }
             }
             else
             {
                 if (hitObject != null && hitObject != gameObject)
                 {
-                    Destroy(hitObject);
+                    victim = hitObject;
                 }
-                break;
+            }
+
+            // Ölüm Noktasında VFX Patlat ve Objeyi SİL
+            if (victim != null)
+            {
+                SpawnDeathVFX(victim.transform.position);
+                Destroy(victim);
             }
         }
 
@@ -222,6 +232,26 @@ public class PlayerManager : MonoBehaviour
         if (currentCount <= 0)
         {
             GameOver();
+        }
+    }
+
+    private void SpawnDeathVFX(Vector3 position)
+    {
+        if (deathParticlePrefab != null)
+        {
+            Vector3 spawnPos = position + Vector3.up * 0.8f;
+            GameObject fx = Instantiate(deathParticlePrefab, spawnPos, Quaternion.identity);
+
+            fx.transform.localScale = Vector3.one;
+
+            ParticleSystem[] particles = fx.GetComponentsInChildren<ParticleSystem>();
+            foreach (ParticleSystem ps in particles)
+            {
+                ps.Clear();
+                ps.Play();
+            }
+
+            Destroy(fx, 1.5f);
         }
     }
 
@@ -254,8 +284,14 @@ public class PlayerManager : MonoBehaviour
         while (subPlayers.Count > targetSubPlayerCount && subPlayers.Count > 0)
         {
             GameObject lastPlayer = subPlayers[subPlayers.Count - 1];
+
+            if (lastPlayer != null)
+            {
+                SpawnDeathVFX(lastPlayer.transform.position);
+                Destroy(lastPlayer);
+            }
+
             subPlayers.RemoveAt(subPlayers.Count - 1);
-            if (lastPlayer != null) Destroy(lastPlayer);
         }
     }
 

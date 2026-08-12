@@ -5,6 +5,8 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
 
+    [SerializeField] private GameObject JoystickBackground;
+
     [Header("Paneller")]
     [SerializeField] private GameObject startPanel;        // Tap to Play ekranı
     [SerializeField] private GameObject gameOverPanel;     // Try Again ekranı
@@ -46,6 +48,8 @@ public class UIManager : MonoBehaviour
         if (startPanel != null) startPanel.SetActive(false);
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
         if (levelCompletePanel != null) levelCompletePanel.SetActive(false);
+        if (JoystickBackground != null) JoystickBackground.SetActive(false);
+    
     }
 
     // Dinamik Level Complete Arayüzü Güncellemesi
